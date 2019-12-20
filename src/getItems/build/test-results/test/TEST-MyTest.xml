@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="MyTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2019-12-20T18:42:14" hostname="vant-N2x0WU" time="2.621">
+  <properties/>
+  <testcase name="test" classname="MyTest" time="2.621"/>
+  <system-out><![CDATA[Your Amazon S3 buckets are:
+* helloworld-dev-serverlessdeploymentbucket-8zx478jon3p6
+* helloworldpython3-dev-serverlessdeploymentbucket-njc9fmqdnj1n
+* local-bucekt
+* mybucket-farid
+* stackery-assetsbucket-5tk64xif4wue
+* transactionsgenerator-de-serverlessdeploymentbuck-1q0xb11i84ll8
+{ Item: {id=2, content=Another content} }
+{ Item: {id=1, content=This is my content} }
+{statusCode: 200,body: Done!!!}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

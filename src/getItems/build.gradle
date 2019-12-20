@@ -1,0 +1,27 @@
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile (
+        'com.amazonaws:aws-lambda-java-core:1.2.0',
+        'com.amazonaws:aws-lambda-java-events:2.2.7',
+        'com.amazonaws:aws-java-sdk-dynamodb:1.11.163',
+        'com.google.code.gson:gson:2.8.5'
+            // https://mvnrepository.com/artifact/junit/junit
+    )
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+task buildZip(type: Zip) {
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.compileClasspath
+    }
+}
+
+build.dependsOn buildZip

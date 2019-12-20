@@ -1,0 +1,147 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Outputs:
+  DeploymentHistoryTag:
+    Description: Stackery Deployment History Tag
+    Value: CXFCSV
+Parameters:
+  EnvironmentAPIGatewayStageName:
+    Default: farid_development
+    Description: Environment name used for API Gateway Stage names (injected by Stackery
+      at deployment time)
+    Type: String
+  EnvironmentTagName:
+    Default: farid-development
+    Description: Environment Name (injected by Stackery at deployment time)
+    Type: String
+  StackTagName:
+    Default: stackery-quickstart
+    Description: Stack Name (injected by Stackery at deployment time)
+    Type: String
+Resources:
+  DeploymentMarkerTagCXFCSV:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  QuickstartApi:
+    DependsOn: DeploymentMarkerTagCXFCSV
+    Properties:
+      Cors:
+        AllowHeaders: '''Authorization,Content-Type'''
+        AllowOrigin: '''*'''
+      DefinitionBody:
+        info: {}
+        paths:
+          /items:
+            get:
+              responses: {}
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${getItems.Arn}/invocations
+          /newItem:
+            post:
+              responses: {}
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${newItem.Arn}/invocations
+        swagger: '2.0'
+      EndpointConfiguration: REGIONAL
+      Name:
+        Fn::Sub:
+        - ${ResourceName} From Stack ${StackTagName} Environment ${EnvironmentTagName}
+        - ResourceName: QuickstartApi
+      StageName:
+        Ref: EnvironmentAPIGatewayStageName
+      TracingEnabled: true
+    Type: AWS::Serverless::Api
+  Table:
+    DependsOn: DeploymentMarkerTagCXFCSV
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      TableName:
+        Fn::Sub: ${AWS::StackName}-Table
+    Type: AWS::DynamoDB::Table
+  getItems:
+    DependsOn: DeploymentMarkerTagCXFCSV
+    Properties:
+      CodeUri: getItems
+      Description:
+        Fn::Sub:
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: getItems
+      Environment:
+        Variables:
+          TABLE_ARN:
+            Fn::GetAtt:
+            - Table
+            - Arn
+          TABLE_NAME:
+            Ref: Table
+      Events:
+        QuickstartApiGETitems:
+          Properties:
+            Method: GET
+            Path: /items
+            RestApiId:
+              Ref: QuickstartApi
+          Type: Api
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-getItems
+      Handler: Handler::handler
+      MemorySize: 3008
+      Policies:
+      - AWSXrayWriteOnlyAccess
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: Table
+      Runtime: java8
+      Timeout: 30
+      Tracing: Active
+    Type: AWS::Serverless::Function
+  newItem:
+    DependsOn: DeploymentMarkerTagCXFCSV
+    Properties:
+      CodeUri: newItem
+      Description:
+        Fn::Sub:
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: newItem
+      Environment:
+        Variables:
+          TABLE_ARN:
+            Fn::GetAtt:
+            - Table
+            - Arn
+          TABLE_NAME:
+            Ref: Table
+      Events:
+        QuickstartApiPOSTnewItem:
+          Properties:
+            Method: POST
+            Path: /newItem
+            RestApiId:
+              Ref: QuickstartApi
+          Type: Api
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-newItem
+      Handler: Handler::handler
+      MemorySize: 3008
+      Policies:
+      - AWSXrayWriteOnlyAccess
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: Table
+      Runtime: java8
+      Timeout: 30
+      Tracing: Active
+    Type: AWS::Serverless::Function
+Transform: AWS::Serverless-2016-10-31

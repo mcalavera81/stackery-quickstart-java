@@ -1,0 +1,10 @@
+Your Amazon S3 buckets are:
+9* helloworld-dev-serverlessdeploymentbucket-8zx478jon3p6
+@* helloworldpython3-dev-serverlessdeploymentbucket-njc9fmqdnj1n
+* local-bucekt
+* mybucket-farid
+%* stackery-assetsbucket-5tk64xif4wue
+B* transactionsgenerator-de-serverlessdeploymentbuck-1q0xb11i84ll8
+*{ Item: {id=2, content=Another content} }
+-{ Item: {id=1, content=This is my content} }
+ {statusCode: 200,body: Done!!!}
